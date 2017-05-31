@@ -15,7 +15,7 @@
         <groupId>com.github.tone</groupId>
         <artifactId>spring-boot</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath/>
+        <relativePath>../../spring-boot</relativePath>
     </parent>
     <dependencies>
         <dependency>
