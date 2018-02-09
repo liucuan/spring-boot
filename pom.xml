@@ -22,17 +22,16 @@
         <module>spring-boot-hello</module>
         <module>spring-boot-mybatis</module>
         <module>spring-boot-log</module>
-        <module>spring-boot-log4j2</module>
         <module>spring-boot-jpa</module>
         <module>spring-boot-swagger2</module>
         <module>spring-boot-rabbitmq</module>
         <module>spring-boot-kafka</module>
         <module>spring-boot-jdbcpool</module>
         <module>spring-boot-docker</module>
-        <module>spring-boot-redis</module>
         <module>dubbo-api</module>
         <module>dubbo-provider</module>
         <module>dubbo-customer</module>
+        <module>spring-boot-shiro-jwt</module>
     </modules>
     <build>
         <finalName>spring-boot</finalName>
