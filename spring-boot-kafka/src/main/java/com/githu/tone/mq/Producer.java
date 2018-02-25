@@ -19,10 +19,11 @@ public class Producer {
     private Gson gson = new GsonBuilder().create();
 
     public void sendMessage() {
-        Message m = new Message();
-        m.setId(System.currentTimeMillis());
-        m.setMsg(UUID.randomUUID().toString());
-        m.setSendTime(new Date());
-        kafkaTemplate.send("test1", gson.toJson(m));
+//        Message m = new Message();
+//        m.setId(System.currentTimeMillis());
+//        m.setMsg(UUID.randomUUID().toString());
+//        m.setSendTime(new Date());
+//        kafkaTemplate.send("test1", gson.toJson(m));
+//        kafkaTemplate.send("logTopic", gson.toJson(m));
     }
 }

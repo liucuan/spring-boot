@@ -10,17 +10,14 @@ import java.util.Date;
  * Created by jenny on 2017/5/31.
  */
 @Component
-public class Producer {
+public class Producer2 {
     @Autowired
     private AmqpTemplate rabbitTemplate;
 
     public void send() {
-//        String context = "hello " + new Date();
-//        System.out.println("Producer : " + context);
-        Message msg = new Message();
-        msg.setId(100);
-        msg.setVaule("msg100");
-        System.out.println("Producer : " + msg);
-        this.rabbitTemplate.convertAndSend("hello", msg);
+        String context = "hello " + new Date();
+        System.out.println("Producer2 : " + context);
+
+        this.rabbitTemplate.convertAndSend("hello", context);
     }
 }
