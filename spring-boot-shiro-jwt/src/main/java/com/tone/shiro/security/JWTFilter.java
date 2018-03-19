@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,7 +30,22 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
         HttpServletRequest req = (HttpServletRequest) request;
         String authorization = req.getHeader("Authorization");
+        if(authorization == null) {
+            authorization = getAuthorInCookie(req);
+        }
         return authorization != null;
+    }
+
+    private String getAuthorInCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for (Cookie c : cookies) {
+                if("Authorization".equals(c.getName())) {
+                    return c.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -38,7 +54,7 @@ public class JWTFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        String authorization = httpServletRequest.getHeader("Authorization");
+        String authorization = getAuthorInCookie(httpServletRequest);
         JWTToken token = new JWTToken(authorization);
         // 提交给realm进行登入，如果错误他会抛出异常并被捕获
         getSubject(request, response).login(token);

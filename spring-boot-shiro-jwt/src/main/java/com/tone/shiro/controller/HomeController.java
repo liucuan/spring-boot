@@ -1,5 +1,9 @@
 package com.tone.shiro.controller;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
@@ -33,11 +37,17 @@ public class HomeController {
         this.service = service;
     }
 
-    @PostMapping("/login")
-    public ResponseBean login(@RequestParam("username") String username, @RequestParam("password") String password) {
+    @GetMapping("/login")
+    public ResponseBean login(@RequestParam("username") String username, @RequestParam("password") String password,
+            HttpServletRequest request, HttpServletResponse response) {
         UserBean userBean = service.getUser(username);
         if(userBean.getPassword().equals(password)) {
-            return new ResponseBean(200, "Login success", JWTUtil.sign(username, password));
+            String jwt = JWTUtil.sign(username, password);
+            Cookie cookie = new Cookie("Authorization", jwt);
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
+            // response.addHeader("Set-Cookie", "Authorization=" + jwt + "; Path=/; HttpOnly");
+            return new ResponseBean(200, "Login success", jwt);
         }else {
             throw new UnauthorizedException();
         }
