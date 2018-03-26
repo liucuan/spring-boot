@@ -1,5 +1,8 @@
 package com.github.tone;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,4 +16,15 @@ public class HelloController {
         return "Hello World";
     }
 
+    @Token(save = true)
+    @RequestMapping("/savetoken")
+    public String getToken(HttpServletRequest request, HttpServletResponse response) {
+        return (String) request.getSession().getAttribute("token");
+    }
+
+    @Token(remove = true)
+    @RequestMapping("/removetoken")
+    public String removeToken(HttpServletRequest request, HttpServletResponse response) {
+        return "success";
+    }
 }
