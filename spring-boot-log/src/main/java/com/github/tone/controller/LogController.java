@@ -1,8 +1,7 @@
-package com.github.tone;
+package com.github.tone.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class LogController {
+
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @RequestMapping(value = "/test", method = RequestMethod.GET)
@@ -20,5 +20,10 @@ public class LogController {
         logger.info("Logger Level ：INFO");
         logger.error("Logger Level ：ERROR");
         return "Hello";
+    }
+
+    @RequestMapping(value = "/hi", method = RequestMethod.GET)
+    public String hi() {
+        return "Hi";
     }
 }
