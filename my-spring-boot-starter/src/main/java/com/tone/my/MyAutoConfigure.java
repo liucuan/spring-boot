@@ -23,8 +23,10 @@ public class MyAutoConfigure {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "my.service", value = "enabled", havingValue = "true")
-    MyService exampleService() {
+    MyService myService() {
+        System.out.println("----------------OnMissingBean");
         return new MyService(properties.getPrefix(), properties.getSuffix());
     }
+
 
 }
