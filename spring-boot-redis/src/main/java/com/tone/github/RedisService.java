@@ -11,14 +11,18 @@ import com.alibaba.fastjson.JSON;
 
 @Component
 public class RedisService {
+
+    private static final int LOCK_EXPIRE_TIME = 10;
+    public static final Long LONG_1 = new Long(1);
     @Autowired
     private JedisPool jedisPool;
 
-    public String set(final String key, final String value, final String nxxx, final String expx, final long time) {
+    public String set(final String key, final String value, final String nxxx, final String expx,
+        final long time) {
         Jedis jedis = jedisPool.getResource();
         try {
             return jedis.set(key, value, nxxx, expx, time);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -35,12 +39,13 @@ public class RedisService {
         try {
             String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
             Object result = jedis
-                    .eval(script, Collections.singletonList(lockKey), Collections.singletonList(requestId));
-            if(new Long(1).equals(result)) {
+                .eval(script, Collections.singletonList(lockKey),
+                    Collections.singletonList(requestId));
+            if (new Long(1).equals(result)) {
                 return true;
             }
             return false;
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -49,7 +54,7 @@ public class RedisService {
         Jedis jedis = jedisPool.getResource();
         try {
             return jedis.zadd(key, score, member);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -58,7 +63,7 @@ public class RedisService {
         Jedis jedis = jedisPool.getResource();
         try {
             return jedis.zadd(key, map);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -71,7 +76,7 @@ public class RedisService {
                 m.put(encode(entry.getKey()), entry.getValue());
             }
             return jedis.zadd(key, m);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -80,22 +85,19 @@ public class RedisService {
         Jedis jedis = jedisPool.getResource();
         try {
             return new ArrayList<>(jedis.zrange(key, start, end));
-        }finally {
+        } finally {
             close(jedis);
         }
     }
 
     /**
      * 查询sorted set成员数目
-     * 
-     * @param key
-     * @return
      */
     public Long zcard(String key) {
         Jedis jedis = jedisPool.getResource();
         try {
             return jedis.zcard(key);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -104,7 +106,7 @@ public class RedisService {
         Jedis jedis = jedisPool.getResource();
         try {
             return jedis.zadd(key, score, encode(obj));
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -118,7 +120,7 @@ public class RedisService {
                 list.add(decode(ele, type));
             }
             return list;
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -137,18 +139,19 @@ public class RedisService {
             ScanParams scanParams = new ScanParams().count(100);
             String cursor = "0";
             do {
-                ScanResult<Map.Entry<String, String>> scanResult = jedis.hscan(bigHashKey, cursor, scanParams);
+                ScanResult<Map.Entry<String, String>> scanResult = jedis
+                    .hscan(bigHashKey, cursor, scanParams);
                 List<Map.Entry<String, String>> entryList = scanResult.getResult();
-                if(entryList != null && !entryList.isEmpty()) {
+                if (entryList != null && !entryList.isEmpty()) {
                     for (Map.Entry<String, String> entry : entryList) {
                         jedis.hdel(bigHashKey, entry.getKey());
                     }
                 }
                 cursor = scanResult.getStringCursor();
-            }while (!"0".equals(cursor));
+            } while (!"0".equals(cursor));
             // 删除bigkey
             jedis.del(bigHashKey);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -166,7 +169,7 @@ public class RedisService {
             }
             // 最终删除key
             jedis.del(bigListKey);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -179,16 +182,16 @@ public class RedisService {
             do {
                 ScanResult<String> scanResult = jedis.sscan(bigSetKey, cursor, scanParams);
                 List<String> memberList = scanResult.getResult();
-                if(memberList != null && !memberList.isEmpty()) {
+                if (memberList != null && !memberList.isEmpty()) {
                     for (String member : memberList) {
                         jedis.srem(bigSetKey, member);
                     }
                 }
                 cursor = scanResult.getStringCursor();
-            }while (!"0".equals(cursor));
+            } while (!"0".equals(cursor));
             // 删除bigkey
             jedis.del(bigSetKey);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
@@ -201,23 +204,66 @@ public class RedisService {
             do {
                 ScanResult<Tuple> scanResult = jedis.zscan(bigZsetKey, cursor, scanParams);
                 List<Tuple> tupleList = scanResult.getResult();
-                if(tupleList != null && !tupleList.isEmpty()) {
+                if (tupleList != null && !tupleList.isEmpty()) {
                     for (Tuple tuple : tupleList) {
                         jedis.zrem(bigZsetKey, tuple.getElement());
                     }
                 }
                 cursor = scanResult.getStringCursor();
-            }while (!"0".equals(cursor));
+            } while (!"0".equals(cursor));
             // 删除bigkey
             jedis.del(bigZsetKey);
-        }finally {
+        } finally {
             close(jedis);
         }
     }
 
     private void close(Jedis jedis) {
-        if(jedis != null) {
+        if (jedis != null) {
             jedis.close();
+        }
+    }
+
+    /**
+     * 获取锁，默认锁超时时间10秒
+     *
+     * @param lockName 锁名
+     * @return 是否成功
+     */
+    public boolean acquireLock(final String lockName) {
+        return acquireLock(lockName, LOCK_EXPIRE_TIME);
+    }
+
+    /**
+     * 获取锁
+     *
+     * @param lockName 锁名
+     * @param lockExpireTime 超时时间，单位秒
+     * @return 是否成功
+     */
+    public boolean acquireLock(final String lockName, final int lockExpireTime) {
+        Jedis jedis = jedisPool.getResource();
+        try {
+            return "OK".equals(jedis.set(lockName, "lock", "NX", "EX", lockExpireTime));
+        } finally {
+            close(jedis);
+        }
+
+    }
+
+    public boolean releaseLock(String key) {
+        Jedis jedis = jedisPool.getResource();
+        try {
+            String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+            Object result = jedis
+                .eval(script, Collections.singletonList(key),
+                    Collections.singletonList("lock"));
+            if (LONG_1.equals(result)) {
+                return true;
+            }
+            return false;
+        } finally {
+            close(jedis);
         }
     }
 }
