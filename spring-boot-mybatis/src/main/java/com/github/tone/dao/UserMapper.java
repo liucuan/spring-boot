@@ -12,7 +12,19 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface UserMapper {
 
-    @Select("SELECT * FROM USER WHERE NAME = #{name}")
+
+    //    @Select({"<script>\n"
+//            + "SELECT * FROM USER WHERE \n"
+//            + "<if test='name!=null || name!=\"\"'>\n"
+//            + "NAME = #{name}\n"
+//            + "</if>\n"
+//            + "</script>"})
+    @Select({"<script>\n"
+            + "SELECT * FROM USER WHERE \n"
+            + "<if test=\"@com.github.tone.dao.MyOgnl@isNotEmpty(name)\">\n"
+            + "NAME = #{name}\n"
+            + "</if>\n"
+            + "</script>"})
     User findByName(@Param("name") String name);
 
     @Insert("INSERT INTO USER(NAME, AGE) VALUES(#{name}, #{age})")
