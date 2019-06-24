@@ -23,7 +23,9 @@ public class MyOgnl {
             return ((Map) obj).isEmpty();
         } else if (obj.getClass().isArray()) {
             return ((Object[]) obj).length == 0;
-        } else {
+        } else if (obj instanceof String){
+            return "".equals(obj);
+        }else {
             return false;
         }
     }
