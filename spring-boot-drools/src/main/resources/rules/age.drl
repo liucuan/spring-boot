@@ -1,0 +1,13 @@
+import com.tone.drools.User               // 导入类
+
+dialect  "mvel"
+
+rule "age"                                      // 规则名，唯一
+    when
+        $user : User(age<15 || age>60)     //规则的条件部分
+
+    then
+        $user.setName("Jim");
+        update($user);
+        System.out.println($user.getAge() + "年龄不符合要求！");
+end
